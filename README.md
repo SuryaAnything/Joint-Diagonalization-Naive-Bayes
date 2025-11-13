@@ -100,14 +100,12 @@ When you run the scripts:
 2.  The final performance summary tables (like in the paper) will be printed to the console.
 3.  All generated plots (decision boundaries, energy reduction charts) will be automatically saved as `.png` files in the `outputs/` directory.
 
-## Citation
+## Authors
 
-If you use this work, please cite the following (coming soon):
-```
-@article{Vachhani2024JDNB,
-  title={A Unified Rotational Framework for Joint-Diagonalized Gaussian Naive Bayes},
-  author={Rohan Vachhani, Miraj Rambhiya, Yasraj Badkul, Surya Narayan, Kirsh Kotak},
-  year={2024},
-  journal={arXiv preprint}
-}
-```
+This project was developed by a team from the **Visvesvaraya National Institute of Technology (VNIT), Nagpur, India**.
+
+* **Rohan Vachhani** (Main Author)
+* Miraj Rambhiya
+* Yasraj Badkul
+* Surya Narayan
+* Kirsh Kotak
