@@ -6,8 +6,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score, log_loss, f1_score, roc_auc_score,
-    precision_score, recall_score
+    precision_score, recall_score, roc_curve
 )
+from sklearn.calibration import calibration_curve
 
 import sys
 import os
@@ -59,8 +60,47 @@ def run_experiment(name, X, y):
     jd_energy = offdiag_energy(Sigmas_z)
     kl_val = kl_divergence_cov(Sigmas[0], Sigmas_z[0])
     metrics.extend([base_energy, jd_energy, kl_val])
-    
+
+    # ====== NEW PLOTS: ROC + CALIBRATION ======
+    outputs_dir = os.path.join(project_root, 'outputs')
+    if not os.path.exists(outputs_dir):
+        os.makedirs(outputs_dir)
+
+    # ROC CURVE
+    fpr_gnb, tpr_gnb, _ = roc_curve(yte, p_gnb[:, 1])
+    fpr_jd, tpr_jd, _ = roc_curve(yte, p_jd[:, 1])
+
+    plt.figure(figsize=(5, 4))
+    plt.plot(fpr_gnb, tpr_gnb, linestyle="--", label="GNB")
+    plt.plot(fpr_jd, tpr_jd, linewidth=2, label="JD-NB")
+    plt.plot([0, 1], [0, 1], 'k--', alpha=0.4)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(f"ROC Curve — {name}")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(outputs_dir, f"roc_{name}.png"))
+    plt.close()
+
+    # CALIBRATION CURVE
+    prob_true_gnb, prob_pred_gnb = calibration_curve(yte, p_gnb[:, 1], n_bins=10)
+    prob_true_jd, prob_pred_jd = calibration_curve(yte, p_jd[:, 1], n_bins=10)
+
+    plt.figure(figsize=(5, 4))
+    plt.plot(prob_pred_gnb, prob_true_gnb, marker="o", linestyle="--", label="GNB")
+    plt.plot(prob_pred_jd, prob_true_jd, marker="o", linewidth=2, label="JD-NB")
+    plt.plot([0, 1], [0, 1], 'k--', alpha=0.4)
+    plt.xlabel("Predicted Confidence")
+    plt.ylabel("Fraction of Positives")
+    plt.title(f"Calibration Curve — {name}")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(outputs_dir, f"calibration_{name}.png"))
+    plt.close()
+    # ==========================================
+
     return metrics
+
 
 def main():
     print("="*50)
@@ -97,15 +137,13 @@ def main():
     plt.ylabel("Off-Diagonal Energy (log scale)")
     plt.title("RUN 2: Reduction in Off-Diagonal Covariance Energy (Log Scale)")
     plt.tight_layout()
-    
-    # Save Energy Plot
+
     outputs_dir = os.path.join(project_root, 'outputs')
-    if not os.path.exists(outputs_dir):
-        os.makedirs(outputs_dir)
     energy_plot_filename = os.path.join(outputs_dir, 'run2_real_world_energy.png')
     fig_energy.savefig(energy_plot_filename)
     print(f"\nEnergy plot saved to {energy_plot_filename}")
     plt.show()
+
 
 if __name__ == "__main__":
     main()
